@@ -24,7 +24,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { School, Wallet } from "lucide-react";
+import { School, Wallet, ShieldCheck } from "lucide-react";
 import { Redirect } from "wouter";
 import { InsertUser, LoginUser } from "@shared/schema";
 
@@ -157,10 +157,23 @@ const AuthPage: React.FC = () => {
                     </div>
                   </div>
                   
-                  <Button variant="outline" className="w-full" disabled>
-                    <Wallet className="mr-2 h-4 w-4" />
-                    Подключить MetaMask
-                  </Button>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <Button variant="outline" disabled>
+                      <Wallet className="mr-2 h-4 w-4" />
+                      Подключить MetaMask
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => {
+                        loginForm.setValue("email", "admin@omsu.ru");
+                        loginForm.setValue("password", "admin123");
+                        setActiveTab("login");
+                      }}
+                    >
+                      <ShieldCheck className="mr-2 h-4 w-4" />
+                      Вход для админа
+                    </Button>
+                  </div>
                 </CardFooter>
               </Card>
             </TabsContent>
