@@ -149,7 +149,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async listActivities(status?: string, offset = 0, limit = 50): Promise<Activity[]> {
-    if (status) {
+    if (status && status !== 'all') {
       return await db
         .select()
         .from(activities)
@@ -287,7 +287,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async listRewards(status?: string): Promise<Reward[]> {
-    if (status) {
+    if (status && status !== 'all') {
       return await db
         .select()
         .from(rewards)
