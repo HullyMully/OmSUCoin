@@ -130,7 +130,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/activities", isAuthenticated, isAdmin, async (req, res) => {
     try {
-      const activityData = insertActivitySchema.parse(req.body);
+      // Преобразуем строковую дату в объект Date перед валидацией
+      const data = { ...req.body };
+      if (typeof data.date === 'string') {
+        data.date = new Date(data.date);
+      }
+      
+      const activityData = insertActivitySchema.parse(data);
       const newActivity = await storage.createActivity(activityData);
       res.status(201).json(newActivity);
     } catch (error) {
@@ -142,7 +148,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/activities/:id", isAuthenticated, isAdmin, async (req, res) => {
     try {
       const activityId = parseInt(req.params.id);
-      const updatedActivity = await storage.updateActivity(activityId, req.body);
+      
+      // Преобразуем строковую дату в объект Date если она есть
+      const data = { ...req.body };
+      if (data.date && typeof data.date === 'string') {
+        data.date = new Date(data.date);
+      }
+      
+      const updatedActivity = await storage.updateActivity(activityId, data);
       
       if (!updatedActivity) {
         return res.status(404).json({ message: "Activity not found" });
