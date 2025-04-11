@@ -28,7 +28,8 @@ const ActivityCard: React.FC<ActivityCardProps> = ({
   const isAdmin = user?.role === "admin";
   
   const isRegistered = !!userRegistration;
-  const isPast = new Date(activity.date) < new Date();
+  const activityDate = typeof activity.date === 'string' ? new Date(activity.date) : activity.date;
+  const isPast = activityDate < new Date();
   const isOpen = activity.status === "open";
   
   const handleRegister = async () => {
@@ -59,13 +60,17 @@ const ActivityCard: React.FC<ActivityCardProps> = ({
     try {
       // Call the API endpoint for cancellation
       await apiRequest("DELETE", `/api/activities/${activity.id}/register`);
+      
+      // Инвалидируем оба запроса, чтобы обновить все данные
       queryClient.invalidateQueries({ queryKey: ["/api/my/registrations"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/activities"] });
       
       toast({
         title: "Запись отменена",
         description: "Вы отменили запись на активность",
       });
       
+      // Если есть колбэк, вызываем его
       if (onCancelRegistration) onCancelRegistration();
     } catch (error) {
       toast({
@@ -76,8 +81,8 @@ const ActivityCard: React.FC<ActivityCardProps> = ({
     }
   };
   
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
+  const formatDate = (dateString: string | Date) => {
+    const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
     return format(date, "d MMMM yyyy, HH:mm", { locale: ru });
   };
   

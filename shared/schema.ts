@@ -30,6 +30,7 @@ export const users = pgTable("users", {
   pseudonym: text("pseudonym"),
   faculty: text("faculty"),
   walletAddress: text("wallet_address"),
+  avatarUrl: text("avatar_url"),
   password: text("password").notNull(),
   role: userRoleEnum("role").notNull().default('student'),
   status: userStatusEnum("status").notNull().default('active'),
