@@ -3,7 +3,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { useRoute } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { Redirect } from "wouter";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { 
@@ -16,7 +16,12 @@ import {
   X, 
   Edit, 
   Filter,
-  AlertTriangle
+  AlertTriangle,
+  User,
+  Mail,
+  School,
+  Key,
+  Wallet
 } from "lucide-react";
 import { DataTable } from "@/components/ui/data-table";
 import { ColumnDef } from "@tanstack/react-table";
@@ -42,6 +47,16 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -265,7 +280,12 @@ const ActivityParticipants: React.FC = () => {
               <AvatarFallback className="text-primary-600">{initials}</AvatarFallback>
             </Avatar>
             <div className="ml-4">
-              <div className="text-sm font-medium text-neutral-900">{participant.pseudonym}</div>
+              <div className="text-sm font-medium text-neutral-900">
+                {participant.name} {participant.surname}
+              </div>
+              <div className="text-xs text-neutral-500">
+                {participant.pseudonym ? `Псевдоним: ${participant.pseudonym}` : 'Нет псевдонима'}
+              </div>
               <div className="text-xs text-neutral-500">{participant.email}</div>
             </div>
           </div>
@@ -365,13 +385,99 @@ const ActivityParticipants: React.FC = () => {
               </Button>
             )}
             
-            <Button
-              size="icon"
-              variant="ghost"
-              title="Просмотр информации"
-            >
-              <Info className="h-4 w-4 text-neutral-600" />
-            </Button>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  title="Просмотр информации"
+                >
+                  <Info className="h-4 w-4 text-neutral-600" />
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[500px]">
+                <DialogHeader>
+                  <DialogTitle>Информация о студенте</DialogTitle>
+                  <DialogDescription>
+                    Детальная информация о студенте
+                  </DialogDescription>
+                </DialogHeader>
+                
+                <div className="py-4">
+                  <Card>
+                    <CardHeader className="p-4 pb-2 flex flex-row items-center space-y-0">
+                      <Avatar className="h-12 w-12 mr-3 bg-primary-200">
+                        <AvatarFallback className="text-primary-600">
+                          {`${participant.name[0]}${participant.surname[0]}`.toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <CardTitle>{participant.name} {participant.surname}</CardTitle>
+                        <CardDescription>{participant.email}</CardDescription>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="p-4 space-y-3">
+                      <div className="flex items-center space-x-2">
+                        <User className="h-4 w-4 text-neutral-400" />
+                        <div className="grid grid-cols-3 w-full">
+                          <span className="text-sm text-neutral-500">Псевдоним:</span>
+                          <span className="text-sm font-medium col-span-2">{participant.pseudonym || "Не указан"}</span>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center space-x-2">
+                        <Key className="h-4 w-4 text-neutral-400" />
+                        <div className="grid grid-cols-3 w-full">
+                          <span className="text-sm text-neutral-500">Студенческий ID:</span>
+                          <span className="text-sm font-medium col-span-2">{participant.studentId}</span>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center space-x-2">
+                        <School className="h-4 w-4 text-neutral-400" />
+                        <div className="grid grid-cols-3 w-full">
+                          <span className="text-sm text-neutral-500">Факультет:</span>
+                          <span className="text-sm font-medium col-span-2">{participant.faculty || "Не указан"}</span>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center space-x-2">
+                        <Mail className="h-4 w-4 text-neutral-400" />
+                        <div className="grid grid-cols-3 w-full">
+                          <span className="text-sm text-neutral-500">Email:</span>
+                          <span className="text-sm font-medium col-span-2">{participant.email}</span>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center space-x-2">
+                        <Wallet className="h-4 w-4 text-neutral-400" />
+                        <div className="grid grid-cols-3 w-full">
+                          <span className="text-sm text-neutral-500">Кошелек:</span>
+                          <span className="text-sm font-medium col-span-2 truncate">
+                            {participant.walletAddress || "Не добавлен"}
+                          </span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  {!participant.walletAddress && (
+                    <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md flex items-start">
+                      <AlertTriangle className="h-4 w-4 text-yellow-500 mr-2 mt-0.5 flex-shrink-0" />
+                      <p className="text-sm text-yellow-700">
+                        У студента не добавлен кошелек. Для начисления токенов необходимо, чтобы студент добавил адрес кошелька в своем профиле.
+                      </p>
+                    </div>
+                  )}
+                </div>
+                
+                <DialogFooter>
+                  <DialogClose asChild>
+                    <Button variant="outline">Закрыть</Button>
+                  </DialogClose>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </div>
         );
       },
