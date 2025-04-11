@@ -96,6 +96,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to update user" });
     }
   });
+  
+  // Upload avatar image
+  app.post("/api/users/:id/avatar", isAuthenticated, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      
+      // Only allow users to upload their own avatar or admins to upload for any user
+      if (req.user?.id !== userId && req.user?.role !== "admin") {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+      
+      if (!req.files || Object.keys(req.files).length === 0 || !req.files.avatar) {
+        return res.status(400).json({ message: "No avatar file uploaded" });
+      }
+      
+      const avatarFile = req.files.avatar as any;
+      
+      // Check file type
+      if (!avatarFile.mimetype.startsWith('image/')) {
+        return res.status(400).json({ message: "Only image files are allowed" });
+      }
+      
+      // Create user uploads directory if it doesn't exist
+      const userUploadsDir = path.join(__dirname, `uploads/avatars`);
+      if (!fs.existsSync(userUploadsDir)) {
+        fs.mkdirSync(userUploadsDir, { recursive: true });
+      }
+      
+      // Create unique filename
+      const fileExt = path.extname(avatarFile.name);
+      const fileName = `user_${userId}_${Date.now()}${fileExt}`;
+      const filePath = path.join(userUploadsDir, fileName);
+      
+      // Move file to uploads directory
+      await avatarFile.mv(filePath);
+      
+      // Save avatar URL to user profile
+      const avatarUrl = `/uploads/avatars/${fileName}`;
+      const updatedUser = await storage.updateUser(userId, { avatarUrl });
+      
+      if (!updatedUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      res.json({ avatarUrl, user: updatedUser });
+    } catch (error) {
+      console.error("Failed to upload avatar:", error);
+      res.status(500).json({ message: "Failed to upload avatar" });
+    }
+  });
 
   // Activities endpoints
   app.get("/api/activities", isAuthenticated, async (req, res) => {

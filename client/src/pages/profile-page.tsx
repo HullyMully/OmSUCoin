@@ -29,6 +29,7 @@ const ProfilePage: React.FC = () => {
   const [editingPseudonym, setEditingPseudonym] = useState(false);
   const [pseudonym, setPseudonym] = useState(user?.pseudonym || "");
   const [connectingWallet, setConnectingWallet] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -107,6 +108,41 @@ const ProfilePage: React.FC = () => {
       console.error(error);
     },
   });
+  
+  // Upload avatar mutation
+  const uploadAvatarMutation = useMutation({
+    mutationFn: async (formData: FormData) => {
+      const response = await fetch(`/api/users/${user?.id}/avatar`, {
+        method: "POST",
+        body: formData,
+        credentials: "include"
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Ошибка загрузки аватара");
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/user"] });
+      setUploadingAvatar(false);
+      toast({
+        title: "Успешно",
+        description: "Аватар обновлен",
+      });
+    },
+    onError: (error: Error) => {
+      setUploadingAvatar(false);
+      toast({
+        title: "Ошибка",
+        description: error.message || "Не удалось загрузить аватар",
+        variant: "destructive",
+      });
+      console.error(error);
+    }
+  });
 
   const handleSavePseudonym = () => {
     if (pseudonym.trim().length < 2) {
@@ -150,9 +186,43 @@ const ProfilePage: React.FC = () => {
     return `${user.name[0]}${user.surname[0]}`.toUpperCase();
   };
 
-  const formatDate = (dateString?: string) => {
+  const formatDate = (dateString?: string | Date) => {
     if (!dateString) return "Н/Д";
-    return format(new Date(dateString), "d MMMM yyyy", { locale: ru });
+    const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
+    return format(date, "d MMMM yyyy", { locale: ru });
+  };
+  
+  const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!user || !e.target.files || e.target.files.length === 0) return;
+    
+    const file = e.target.files[0];
+    
+    // Проверка размера файла (не более 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "Ошибка",
+        description: "Размер файла не должен превышать 5MB",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Проверка типа файла
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: "Ошибка",
+        description: "Файл должен быть изображением",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Создаем FormData для отправки файла
+    const formData = new FormData();
+    formData.append('avatar', file);
+    
+    setUploadingAvatar(true);
+    uploadAvatarMutation.mutate(formData);
   };
 
   if (!user) {
@@ -177,9 +247,39 @@ const ProfilePage: React.FC = () => {
           <Card className="overflow-hidden border border-neutral-200">
             <CardContent className="p-6">
               <div className="flex flex-col items-center">
-                <div className="w-24 h-24 rounded-full bg-primary-200 flex items-center justify-center mb-4">
-                  <span className="text-primary-600 text-2xl font-semibold">{getInitials()}</span>
-                </div>
+                {user.avatarUrl ? (
+                  <div className="w-24 h-24 rounded-full overflow-hidden mb-4 relative group">
+                    <img 
+                      src={user.avatarUrl} 
+                      alt={getInitials()} 
+                      className="w-full h-full object-cover"
+                    />
+                    <div 
+                      className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                      onClick={() => document.getElementById('avatar-upload')?.click()}
+                    >
+                      <Pencil className="h-5 w-5 text-white" />
+                    </div>
+                  </div>
+                ) : (
+                  <div 
+                    className="w-24 h-24 rounded-full bg-primary-200 flex items-center justify-center mb-4 cursor-pointer relative group"
+                    onClick={() => document.getElementById('avatar-upload')?.click()}
+                  >
+                    <span className="text-primary-600 text-2xl font-semibold">{getInitials()}</span>
+                    <div className="absolute inset-0 bg-black/20 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Pencil className="h-5 w-5 text-white" />
+                    </div>
+                  </div>
+                )}
+                
+                <input 
+                  type="file" 
+                  id="avatar-upload" 
+                  className="hidden" 
+                  accept="image/*"
+                  onChange={handleAvatarUpload}
+                />
                 
                 {editingPseudonym ? (
                   <div className="w-full flex space-x-2 mb-2">
