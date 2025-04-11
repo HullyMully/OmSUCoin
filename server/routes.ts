@@ -238,6 +238,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to fetch registrations" });
     }
   });
+  
+  // Cancel registration
+  app.delete("/api/activities/:id/register", isAuthenticated, async (req, res) => {
+    try {
+      const activityId = parseInt(req.params.id);
+      const userId = req.user!.id;
+      
+      // Check if registration exists
+      const registration = await storage.getRegistration(userId, activityId);
+      if (!registration) {
+        return res.status(404).json({ message: "Registration not found" });
+      }
+      
+      // Check if activity is still open
+      const activity = await storage.getActivity(activityId);
+      if (!activity) {
+        return res.status(404).json({ message: "Activity not found" });
+      }
+      
+      if (activity.status !== "open") {
+        return res.status(400).json({ message: "Cannot cancel registration for closed activity" });
+      }
+      
+      // Update registration status
+      await storage.updateRegistration(registration.id, { status: "rejected" });
+      
+      res.json({ success: true, message: "Registration cancelled" });
+    } catch (error) {
+      console.error("Failed to cancel registration:", error);
+      res.status(500).json({ message: "Failed to cancel registration" });
+    }
+  });
 
   // Transactions endpoints
   app.get("/api/my/transactions", isAuthenticated, async (req, res) => {

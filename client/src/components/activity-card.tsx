@@ -57,8 +57,10 @@ const ActivityCard: React.FC<ActivityCardProps> = ({
     if (!userRegistration) return;
     
     try {
-      // This would need a proper API endpoint for cancellation
-      // For now, we're just showing the UI flow
+      // Call the API endpoint for cancellation
+      await apiRequest("DELETE", `/api/activities/${activity.id}/register`);
+      queryClient.invalidateQueries({ queryKey: ["/api/my/registrations"] });
+      
       toast({
         title: "Запись отменена",
         description: "Вы отменили запись на активность",
