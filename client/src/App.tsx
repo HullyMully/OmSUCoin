@@ -28,6 +28,7 @@ const App: FC = () => {
               <Route path="/" component={HomePage} />
               <Route path="/auth" component={AuthPage} />
               <Route path="/activities" component={ActivitiesPage} />
+              <Route path="/leaderboard" component={LeaderboardPage} />
               <Route path="/profile" component={ProfilePage} />
               <Route path="/rewards" component={RewardsPage} />
               <Route path="/admin/activities" component={CreateActivity} />
