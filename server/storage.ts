@@ -1,8 +1,8 @@
 import { users, activities, registrations, transactions, rewards } from "@shared/schema";
 import { db, pool } from "./db";
 import { eq, and, desc, count } from "drizzle-orm";
-import connectPg from "connect-pg-simple";
 import session from "express-session";
+import createMemoryStore from "memorystore";
 import type { 
   User, 
   InsertUser, 
@@ -16,7 +16,7 @@ import type {
   InsertReward 
 } from "@shared/schema";
 
-const PostgresSessionStore = connectPg(session);
+const MemoryStore = createMemoryStore(session);
 
 export interface IStorage {
   // Users
@@ -62,9 +62,8 @@ export class DatabaseStorage implements IStorage {
   sessionStore: session.Store;
 
   constructor() {
-    this.sessionStore = new PostgresSessionStore({ 
-      pool,
-      createTableIfMissing: true
+    this.sessionStore = new MemoryStore({
+      checkPeriod: 86400000 // очищать старые записи раз в день
     });
   }
 
