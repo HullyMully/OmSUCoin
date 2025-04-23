@@ -1,5 +1,5 @@
 import { FC } from 'react';
-import { Switch, Route, Routes } from "wouter";
+import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -16,25 +16,27 @@ import { ProtectedRoute } from "./lib/protected-route";
 import { AuthProvider } from "./hooks/use-auth";
 import AppHeader from "./components/app-header";
 import AppFooter from "./components/app-footer";
-import { MainLayout } from "./components/main-layout";
-import AdminActivitiesPage from "@/pages/admin/activities-page";
-import AdminRewardsPage from "@/pages/admin/rewards-page";
 
 const App: FC = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <Routes>
-          <Route path="/" element={<MainLayout />}>
-            <Route index element={<HomePage />} />
-            <Route path="auth" element={<AuthPage />} />
-            <Route path="activities" element={<ActivitiesPage />} />
-            <Route path="profile" element={<ProfilePage />} />
-            <Route path="rewards" element={<RewardsPage />} />
-            <Route path="admin/activities" element={<AdminActivitiesPage />} />
-            <Route path="admin/rewards" element={<AdminRewardsPage />} />
-          </Route>
-        </Routes>
+        <div className="min-h-screen flex flex-col">
+          <AppHeader />
+          <main className="flex-grow">
+            <Switch>
+              <Route path="/" component={HomePage} />
+              <Route path="/auth" component={AuthPage} />
+              <Route path="/activities" component={ActivitiesPage} />
+              <Route path="/profile" component={ProfilePage} />
+              <Route path="/rewards" component={RewardsPage} />
+              <Route path="/admin/activities" component={CreateActivity} />
+              <Route path="/admin/activity/:id" component={ActivityParticipants} />
+              <Route component={NotFound} />
+            </Switch>
+          </main>
+          <AppFooter />
+        </div>
         <Toaster />
       </AuthProvider>
     </QueryClientProvider>

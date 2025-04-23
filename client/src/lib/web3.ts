@@ -383,7 +383,7 @@ export async function initWeb3() {
       
       // Check if user is on BSC Testnet
       const chainId = await web3.eth.getChainId();
-      if (chainId !== 97) { // BSC Testnet chain ID
+      if (chainId.toString() !== '97') { // BSC Testnet chain ID
         try {
           await window.ethereum.request({
             method: 'wallet_switchEthereumChain',
