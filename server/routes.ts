@@ -324,8 +324,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Cannot cancel registration for closed activity" });
       }
       
-      // Update registration status
-      await storage.updateRegistration(registration.id, { status: "rejected" });
+      // Delete registration
+      await storage.deleteRegistration(userId, activityId);
       
       res.json({ success: true, message: "Registration cancelled" });
     } catch (error) {

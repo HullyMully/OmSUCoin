@@ -42,6 +42,7 @@ export interface IStorage {
   listRegistrationsByUser(userId: number): Promise<Registration[]>;
   listRegistrationsByActivity(activityId: number): Promise<Registration[]>;
   getRegistrationWithUserDetails(activityId: number): Promise<any[]>;
+  deleteRegistration(userId: number, activityId: number): Promise<void>;
 
   // Transactions
   getTransaction(id: number): Promise<Transaction | undefined>;
@@ -229,6 +230,17 @@ export class DatabaseStorage implements IStorage {
       .orderBy(registrations.createdAt);
     
     return result;
+  }
+
+  async deleteRegistration(userId: number, activityId: number): Promise<void> {
+    await db
+      .delete(registrations)
+      .where(
+        and(
+          eq(registrations.userId, userId),
+          eq(registrations.activityId, activityId)
+        )
+      );
   }
 
   // Transactions

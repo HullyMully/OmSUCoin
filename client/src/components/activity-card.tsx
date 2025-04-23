@@ -62,8 +62,8 @@ const ActivityCard: React.FC<ActivityCardProps> = ({
       await apiRequest("DELETE", `/api/activities/${activity.id}/register`);
       
       // Инвалидируем оба запроса, чтобы обновить все данные
-      queryClient.invalidateQueries({ queryKey: ["/api/my/registrations"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/activities"] });
+      await queryClient.invalidateQueries({ queryKey: ["/api/my/registrations"] });
+      await queryClient.invalidateQueries({ queryKey: ["/api/activities"] });
       
       toast({
         title: "Запись отменена",
