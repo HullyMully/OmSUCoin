@@ -449,6 +449,9 @@ export async function getBalance(address: string) {
   if (contract && address) {
     try {
       const balance = await contract.methods.balanceOf(address).call();
+      if (BigInt(balance) === BigInt(0)) {
+        return '0';
+      }
       return web3!.utils.fromWei(balance, 'ether');
     } catch (error) {
       console.error("Error getting token balance:", error);

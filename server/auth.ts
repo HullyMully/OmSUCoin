@@ -133,6 +133,7 @@ export function setupAuth(app: Express) {
       const user = await storage.createUser({
         ...userData,
         password: hashedPassword,
+        updatedAt: new Date(),
       });
       
       // Remove password from response
@@ -161,7 +162,7 @@ export function setupAuth(app: Express) {
       // Validate login data
       loginUserSchema.parse(req.body);
       
-      passport.authenticate("local", (err, user, info) => {
+      passport.authenticate("local", (err: Error, user: User, info: { message: string }) => {
         if (err) return next(err);
         if (!user) {
           return res.status(401).json({ message: info?.message || "Login failed" });

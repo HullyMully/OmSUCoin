@@ -1,4 +1,5 @@
-import { Switch, Route } from "wouter";
+import { FC } from 'react';
+import { Switch, Route, Routes } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -15,38 +16,29 @@ import { ProtectedRoute } from "./lib/protected-route";
 import { AuthProvider } from "./hooks/use-auth";
 import AppHeader from "./components/app-header";
 import AppFooter from "./components/app-footer";
+import { MainLayout } from "./components/main-layout";
+import AdminActivitiesPage from "@/pages/admin/activities-page";
+import AdminRewardsPage from "@/pages/admin/rewards-page";
 
-function Router() {
-  return (
-    <div className="min-h-screen flex flex-col">
-      <AppHeader />
-      <main className="flex-grow">
-        <Switch>
-          <Route path="/auth" component={AuthPage} />
-          <ProtectedRoute path="/" component={HomePage} />
-          <ProtectedRoute path="/activities" component={ActivitiesPage} />
-          <ProtectedRoute path="/leaderboard" component={LeaderboardPage} />
-          <ProtectedRoute path="/rewards" component={RewardsPage} />
-          <ProtectedRoute path="/profile" component={ProfilePage} />
-          <ProtectedRoute path="/admin/create-activity" component={CreateActivity} />
-          <ProtectedRoute path="/admin/activity/:id" component={ActivityParticipants} />
-          <Route component={NotFound} />
-        </Switch>
-      </main>
-      <AppFooter />
-    </div>
-  );
-}
-
-function App() {
+const App: FC = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <Router />
+        <Routes>
+          <Route path="/" element={<MainLayout />}>
+            <Route index element={<HomePage />} />
+            <Route path="auth" element={<AuthPage />} />
+            <Route path="activities" element={<ActivitiesPage />} />
+            <Route path="profile" element={<ProfilePage />} />
+            <Route path="rewards" element={<RewardsPage />} />
+            <Route path="admin/activities" element={<AdminActivitiesPage />} />
+            <Route path="admin/rewards" element={<AdminRewardsPage />} />
+          </Route>
+        </Routes>
         <Toaster />
       </AuthProvider>
     </QueryClientProvider>
   );
-}
+};
 
 export default App;

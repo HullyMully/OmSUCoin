@@ -50,7 +50,7 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({
                       {transaction.description}
                     </p>
                     <p className="text-xs text-neutral-500">
-                      {formatDate(transaction.createdAt)}
+                      {formatDate(transaction.createdAt.toISOString())}
                     </p>
                     {transaction.txHash && (
                       <a 
