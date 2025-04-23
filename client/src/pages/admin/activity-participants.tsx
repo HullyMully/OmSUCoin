@@ -193,7 +193,7 @@ const ActivityParticipants: React.FC = () => {
   };
   
   // Handle mint tokens
-  const handleMintTokens = () => {
+  const handleMintTokens = async () => {
     if (!activity) return;
     
     let userIds: number[] = [];
@@ -216,11 +216,31 @@ const ActivityParticipants: React.FC = () => {
       });
       return;
     }
-    
-    mintTokensMutation.mutate({ 
-      userIds, 
-      note: mintNote || `Токены за участие в "${activity.title}"`
-    });
+
+    try {
+      await mintTokensMutation.mutateAsync({ 
+        userIds, 
+        note: mintNote || `Токены за участие в "${activity.title}"`
+      });
+      toast({
+        title: "Успешно",
+        description: "Токены успешно начислены",
+      });
+    } catch (error: any) {
+      if (error.response?.data?.message?.includes("has no wallet address")) {
+        toast({
+          title: "Ошибка",
+          description: "У некоторых пользователей не указан адрес кошелька. Попросите их добавить кошелек в профиле.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Ошибка",
+          description: error.response?.data?.message || "Не удалось начислить токены",
+          variant: "destructive",
+        });
+      }
+    }
   };
   
   // Table columns
