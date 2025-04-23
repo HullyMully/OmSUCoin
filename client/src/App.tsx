@@ -27,12 +27,20 @@ const App: FC = () => {
             <Switch>
               <Route path="/" component={HomePage} />
               <Route path="/auth" component={AuthPage} />
-              <Route path="/activities" component={ActivitiesPage} />
-              <Route path="/leaderboard" component={LeaderboardPage} />
-              <Route path="/profile" component={ProfilePage} />
-              <Route path="/rewards" component={RewardsPage} />
-              <Route path="/admin/activities" component={CreateActivity} />
-              <Route path="/admin/activity/:id" component={ActivityParticipants} />
+              <ProtectedRoute path="/activities" component={ActivitiesPage} />
+              <ProtectedRoute path="/leaderboard" component={LeaderboardPage} />
+              <ProtectedRoute path="/profile" component={ProfilePage} />
+              <ProtectedRoute path="/rewards" component={RewardsPage} />
+              <ProtectedRoute 
+                path="/admin/activities" 
+                component={CreateActivity}
+                requireRole="admin"
+              />
+              <ProtectedRoute 
+                path="/admin/activity/:id" 
+                component={ActivityParticipants}
+                requireRole="admin"
+              />
               <Route component={NotFound} />
             </Switch>
           </main>

@@ -1,15 +1,22 @@
-import { useAuth } from "@/hooks/use-auth";
+import { FC, ComponentType } from 'react';
+import { Route, useLocation } from 'wouter';
+import { useAuth } from '@/hooks/use-auth';
 import { Loader2 } from "lucide-react";
-import { Redirect, Route } from "wouter";
+import { Redirect } from "wouter";
 
-export function ProtectedRoute({
-  path,
-  component: Component,
-}: {
+interface ProtectedRouteProps {
+  component: ComponentType;
   path: string;
-  component: () => React.JSX.Element;
-}) {
-  const { user, isLoading } = useAuth();
+  requireRole?: 'admin' | 'student';
+}
+
+export const ProtectedRoute: FC<ProtectedRouteProps> = ({
+  component: Component,
+  path,
+  requireRole,
+}) => {
+  const { user, isAuthenticated, isLoading } = useAuth();
+  const [, setLocation] = useLocation();
 
   if (isLoading) {
     return (
@@ -21,7 +28,7 @@ export function ProtectedRoute({
     );
   }
 
-  if (!user) {
+  if (!isAuthenticated) {
     return (
       <Route path={path}>
         <Redirect to="/auth" />
@@ -29,5 +36,10 @@ export function ProtectedRoute({
     );
   }
 
+  if (requireRole && user?.role !== requireRole) {
+    setLocation('/');
+    return null;
+  }
+
   return <Route path={path} component={Component} />;
-}
+};

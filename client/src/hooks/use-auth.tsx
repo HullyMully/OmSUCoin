@@ -3,15 +3,18 @@ import {
   useQuery,
   useMutation,
   UseMutationResult,
+  useQueryClient,
 } from "@tanstack/react-query";
 import { User, InsertUser, LoginUser } from "@shared/schema";
 import { getQueryFn, apiRequest, queryClient } from "../lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
+import api from '@/lib/axios';
 
 type AuthContextType = {
   user: User | null;
   isLoading: boolean;
+  isAuthenticated: boolean;
   error: Error | null;
   loginMutation: UseMutationResult<Omit<User, "password">, Error, LoginUser>;
   logoutMutation: UseMutationResult<void, Error, void>;
@@ -23,6 +26,7 @@ export const AuthContext = createContext<AuthContextType | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
+  const queryClient = useQueryClient();
 
   const {
     data: user,
@@ -105,17 +109,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [user, isLoading, setLocation]);
 
+  const value = {
+    user,
+    isLoading,
+    isAuthenticated: !!user,
+    error,
+    loginMutation,
+    logoutMutation,
+    registerMutation,
+  };
+
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        isLoading,
-        error,
-        loginMutation,
-        logoutMutation,
-        registerMutation,
-      }}
-    >
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
