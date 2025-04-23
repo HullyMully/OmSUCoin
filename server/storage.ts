@@ -1,5 +1,5 @@
 import { users, activities, registrations, transactions, rewards } from "@shared/schema";
-import { db } from "./db";
+import { db, pool } from "./db";
 import { eq, and, desc, count } from "drizzle-orm";
 import connectPg from "connect-pg-simple";
 import session from "express-session";
@@ -63,9 +63,7 @@ export class DatabaseStorage implements IStorage {
 
   constructor() {
     this.sessionStore = new PostgresSessionStore({ 
-      conObject: {
-        connectionString: process.env.DATABASE_URL,
-      },
+      pool,
       createTableIfMissing: true
     });
   }
